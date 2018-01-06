@@ -131,11 +131,11 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <PackageReference Include="Costura.Fody" Version="1.6.2" />
     <PackageReference Include="Nancy.Hosting.Self" Version="1.4.1" />
     <PackageReference Include="HidSharp" Version="1.5.0" />
+    <PackageReference Include="PInvoke.Kernel32" Version="0.5.111" />
     <PackageReference Include="Topshelf" Version="4.0.3" />
   </ItemGroup>
 </Project>
