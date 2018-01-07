@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -14,6 +15,16 @@ namespace HidCerberus.Srv.Core
 
     public class OpenPermissionRequestedEventArgs : EventArgs
     {
+        public OpenPermissionRequestedEventArgs(IEnumerable<string> ids, int pid)
+        {
+            HardwareIds = ids;
+            ProcessId = pid;
+        }
+
+        public IEnumerable<string> HardwareIds { get; }
+
+        public int ProcessId { get; }
+
         public bool IsAllowed { get; set; }
     }
 
@@ -47,15 +58,9 @@ namespace HidCerberus.Srv.Core
                 Task.Factory.StartNew(InvertedCallSupplierWorker, _invertedCallTokenSource.Token);
         }
 
-        public static string DevicePath => "\\\\.\\HidGuardian";
+        public event OpenPermissionRequestedEventHandler OpenPermissionRequested;
 
-        public static string ByteArrayToString(byte[] ba)
-        {
-            var hex = new StringBuilder(ba.Length * 2);
-            foreach (var b in ba)
-                hex.AppendFormat("{0:x2} ", b);
-            return hex.ToString();
-        }
+        public static string DevicePath => "\\\\.\\HidGuardian";
 
         private void InvertedCallSupplierWorker(object cancellationToken)
         {
@@ -99,17 +104,23 @@ namespace HidCerberus.Srv.Core
                     Console.WriteLine($"DeviceIndex: {request.DeviceIndex}");
                     Console.WriteLine($"ProcessId: {request.ProcessId}");
 
+                    Console.WriteLine($"ProcessName: {Process.GetProcessById((int)request.ProcessId).ProcessName}");
+
                     foreach (var extractHardwareId in ExtractHardwareIds(request))
-                    {
                         Console.WriteLine($"HWID: {extractHardwareId}");
-                    }
+
+                    var eventArgs =
+                        new OpenPermissionRequestedEventArgs(ExtractHardwareIds(request), (int) request.ProcessId);
+                    OpenPermissionRequested?.Invoke(this, eventArgs);
+
+                    Console.WriteLine($"IsAllowed: {eventArgs.IsAllowed}");
 
                     Marshal.StructureToPtr(
                         new HidGuardianSetCreateRequest
                         {
                             RequestId = request.RequestId,
                             DeviceIndex = request.DeviceIndex,
-                            IsAllowed = true
+                            IsAllowed = eventArgs.IsAllowed
                         },
                         authCallBuffer, false);
 

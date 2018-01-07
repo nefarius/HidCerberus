@@ -12,6 +12,8 @@ namespace HidCerberus.Srv
         {
             var hc = new HidGuardianControlDevice();
 
+            hc.OpenPermissionRequested += (sender, eventArgs) => eventArgs.IsAllowed = true;
+
             HostFactory.Run(x =>
             {
                 StaticConfiguration.DisableErrorTraces = false;
