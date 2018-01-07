@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using HidCerberus.Srv.Util;
@@ -16,14 +19,14 @@ namespace HidCerberus.Srv.Core
 
     public partial class HidGuardianControlDevice : IDisposable
     {
-        public static string DevicePath => "\\\\.\\HidGuardian";
-
         private readonly Kernel32.SafeObjectHandle _deviceHandle;
         private readonly CancellationTokenSource _invertedCallTokenSource = new CancellationTokenSource();
         private readonly Random _randGen = new Random();
 
         public HidGuardianControlDevice()
         {
+            Console.WriteLine("Ctor");
+
             _deviceHandle = Kernel32.CreateFile(DevicePath,
                 Kernel32.ACCESS_MASK.GenericRight.GENERIC_READ | Kernel32.ACCESS_MASK.GenericRight.GENERIC_WRITE,
                 Kernel32.FileShare.FILE_SHARE_READ | Kernel32.FileShare.FILE_SHARE_WRITE,
@@ -38,17 +41,35 @@ namespace HidCerberus.Srv.Core
             if (_deviceHandle.IsInvalid)
                 throw new ArgumentException($"Couldn't open device {DevicePath}");
 
-            for (int i = 0; i < 20; i++)
-            {
+            ThreadPool.SetMinThreads(20, 20);
+
+            for (var i = 0; i < 20; i++)
                 Task.Factory.StartNew(InvertedCallSupplierWorker, _invertedCallTokenSource.Token);
-            }
+        }
+
+        public static string DevicePath => "\\\\.\\HidGuardian";
+
+        public static string ByteArrayToString(byte[] ba)
+        {
+            var hex = new StringBuilder(ba.Length * 2);
+            foreach (var b in ba)
+                hex.AppendFormat("{0:x2} ", b);
+            return hex.ToString();
         }
 
         private void InvertedCallSupplierWorker(object cancellationToken)
         {
-            var token = (CancellationToken)cancellationToken;
-            var requestSize = Marshal.SizeOf<HidGuardianGetCreateRequest>();
-            var requestBuffer = Marshal.AllocHGlobal(requestSize);
+            Console.WriteLine("Spawned thread");
+
+            var token = (CancellationToken) cancellationToken;
+
+            var invertedCallSize = Marshal.SizeOf<HidGuardianGetCreateRequest>();
+            var invertedCallBuffer = Marshal.AllocHGlobal(invertedCallSize);
+
+            Console.WriteLine($"invertedCallSize = {invertedCallSize}");
+
+            var authCallSize = Marshal.SizeOf<HidGuardianSetCreateRequest>();
+            var authCallBuffer = Marshal.AllocHGlobal(authCallSize);
 
             try
             {
@@ -59,29 +80,65 @@ namespace HidCerberus.Srv.Core
                     Marshal.StructureToPtr(
                         new HidGuardianGetCreateRequest
                         {
+                            Size = (uint) invertedCallSize,
                             RequestId = requestId
-                        }, 
-                        requestBuffer, false);
+                        },
+                        invertedCallBuffer, false);
 
                     var ret = _deviceHandle.OverlappedDeviceIoControl(
                         IoctlHidguardianGetCreateRequest,
-                        requestBuffer,
-                        requestSize,
-                        requestBuffer,
-                        requestSize,
+                        invertedCallBuffer,
+                        invertedCallSize,
+                        invertedCallBuffer,
+                        invertedCallSize,
                         out var _);
 
-                    var request = Marshal.PtrToStructure<HidGuardianGetCreateRequest>(requestBuffer);
+                    var request = Marshal.PtrToStructure<HidGuardianGetCreateRequest>(invertedCallBuffer);
+
+                    Console.WriteLine($"RequestId: {request.RequestId}");
+                    Console.WriteLine($"DeviceIndex: {request.DeviceIndex}");
+                    Console.WriteLine($"ProcessId: {request.ProcessId}");
+
+                    foreach (var extractHardwareId in ExtractHardwareIds(request))
+                    {
+                        Console.WriteLine($"HWID: {extractHardwareId}");
+                    }
+
+                    Marshal.StructureToPtr(
+                        new HidGuardianSetCreateRequest
+                        {
+                            RequestId = request.RequestId,
+                            DeviceIndex = request.DeviceIndex,
+                            IsAllowed = true
+                        },
+                        authCallBuffer, false);
+
+                    ret = _deviceHandle.OverlappedDeviceIoControl(
+                        IoctlHidguardianSetCreateRequest,
+                        authCallBuffer,
+                        authCallSize,
+                        authCallBuffer,
+                        authCallSize,
+                        out var _);
                 }
             }
             finally
             {
-                Marshal.FreeHGlobal(requestBuffer);
+                Marshal.FreeHGlobal(invertedCallBuffer);
             }
         }
 
+        private static IEnumerable<string> ExtractHardwareIds(HidGuardianGetCreateRequest request)
+        {
+            var multibyte = Encoding.Unicode.GetString(request.HardwareIds).TrimEnd('\0');
+
+            return Encoding.UTF8.GetBytes(multibyte).Separate(new byte[] {0x00})
+                .Select(chunk => Encoding.UTF8.GetString(chunk)).ToList();
+        }
+
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
+
+        private bool disposedValue; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {
@@ -98,18 +155,20 @@ namespace HidCerberus.Srv.Core
             }
         }
 
-        ~HidGuardianControlDevice() {
-          // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-          Dispose(false);
+        ~HidGuardianControlDevice()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(false);
         }
 
         // This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);            
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
+
         #endregion
     }
 }

@@ -1,4 +1,6 @@
-﻿using HidCerberus.Srv.NancyFx;
+﻿using System;
+using HidCerberus.Srv.Core;
+using HidCerberus.Srv.NancyFx;
 using Nancy;
 using Topshelf;
 
@@ -8,6 +10,8 @@ namespace HidCerberus.Srv
     {
         static void Main(string[] args)
         {
+            var hc = new HidGuardianControlDevice();
+
             HostFactory.Run(x =>
             {
                 StaticConfiguration.DisableErrorTraces = false;
