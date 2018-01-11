@@ -1,0 +1,10 @@
+﻿{
+  "Core" : {
+    "HGCD": {
+      "Performance": {
+        "WorkerThreads": 20,
+        "CompletionPortThreads": 20 
+      }
+    } 
+  } 
+}

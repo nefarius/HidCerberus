@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using HidCerberus.Srv.Util;
+using JsonConfig;
 using PInvoke;
 
 namespace HidCerberus.Srv.Core
@@ -36,8 +37,6 @@ namespace HidCerberus.Srv.Core
 
         public HidGuardianControlDevice()
         {
-            Console.WriteLine("Ctor");
-
             _deviceHandle = Kernel32.CreateFile(DevicePath,
                 Kernel32.ACCESS_MASK.GenericRight.GENERIC_READ | Kernel32.ACCESS_MASK.GenericRight.GENERIC_WRITE,
                 Kernel32.FileShare.FILE_SHARE_READ | Kernel32.FileShare.FILE_SHARE_WRITE,
@@ -52,9 +51,12 @@ namespace HidCerberus.Srv.Core
             if (_deviceHandle.IsInvalid)
                 throw new ArgumentException($"Couldn't open device {DevicePath}");
 
-            ThreadPool.SetMinThreads(20, 20);
+            int maxThreads = Config.Global.Core.HGCD.Performance.WorkerThreads;
+            int completionPortThreads = Config.Global.Core.HGCD.Performance.CompletionPortThreads;
 
-            for (var i = 0; i < 20; i++)
+            ThreadPool.SetMinThreads(maxThreads, completionPortThreads);
+
+            for (var i = 0; i < maxThreads; i++)
                 _invertedCallTasks.Add(
                     Task.Factory.StartNew(InvertedCallSupplierWorker, _invertedCallTokenSource.Token));
         }

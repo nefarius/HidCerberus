@@ -1,5 +1,6 @@
 ﻿using HidCerberus.Srv.NancyFx;
 using Nancy;
+using Serilog;
 using Topshelf;
 
 namespace HidCerberus.Srv
@@ -8,6 +9,12 @@ namespace HidCerberus.Srv
     {
         static void Main(string[] args)
         {
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .WriteTo.Console()
+                .WriteTo.RollingFile("Logs\\HidCerberus.Srv-{Date}.log")
+                .CreateLogger();
+
             HostFactory.Run(x =>
             {
                 StaticConfiguration.DisableErrorTraces = false;
