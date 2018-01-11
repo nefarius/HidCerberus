@@ -1,4 +1,4 @@
-﻿using HidCerberus.Srv.NancyFx;
+﻿using HidCerberus.Srv.Core;
 using Nancy;
 using Serilog;
 using Topshelf;
@@ -19,9 +19,9 @@ namespace HidCerberus.Srv
             {
                 StaticConfiguration.DisableErrorTraces = false;
 
-                x.Service<NancySelfHost>(s =>
+                x.Service<HidCerberusService>(s =>
                 {
-                    s.ConstructUsing(name => new NancySelfHost());
+                    s.ConstructUsing(name => new HidCerberusService());
                     s.WhenStarted(tc => tc.Start());
                     s.WhenStopped(tc => tc.Stop());
                 });
