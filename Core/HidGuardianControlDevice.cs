@@ -33,6 +33,7 @@ namespace HidCerberus.Srv.Core
         private readonly Kernel32.SafeObjectHandle _deviceHandle;
         private readonly CancellationTokenSource _invertedCallTokenSource = new CancellationTokenSource();
         private readonly Random _randGen = new Random();
+        private readonly List<Task> _invertedCallTasks = new List<Task>();
 
         public HidGuardianControlDevice()
         {
@@ -55,23 +56,22 @@ namespace HidCerberus.Srv.Core
             ThreadPool.SetMinThreads(20, 20);
 
             for (var i = 0; i < 20; i++)
-                Task.Factory.StartNew(InvertedCallSupplierWorker, _invertedCallTokenSource.Token);
+                _invertedCallTasks.Add(Task.Factory.StartNew(InvertedCallSupplierWorker, _invertedCallTokenSource.Token));
         }
 
         public event OpenPermissionRequestedEventHandler OpenPermissionRequested;
 
-        public static string DevicePath => "\\\\.\\HidGuardian";
+        /// <summary>
+        ///     Gets the path to the control device of HidGuardian.
+        /// </summary>
+        private static string DevicePath => "\\\\.\\HidGuardian";
 
         private void InvertedCallSupplierWorker(object cancellationToken)
         {
-            Console.WriteLine("Spawned thread");
-
-            var token = (CancellationToken) cancellationToken;
+            var token = (CancellationToken)cancellationToken;
 
             var invertedCallSize = Marshal.SizeOf<HidGuardianGetCreateRequest>();
             var invertedCallBuffer = Marshal.AllocHGlobal(invertedCallSize);
-
-            Console.WriteLine($"invertedCallSize = {invertedCallSize}");
 
             var authCallSize = Marshal.SizeOf<HidGuardianSetCreateRequest>();
             var authCallBuffer = Marshal.AllocHGlobal(authCallSize);
@@ -80,12 +80,12 @@ namespace HidCerberus.Srv.Core
             {
                 while (!token.IsCancellationRequested)
                 {
-                    var requestId = (uint) _randGen.Next();
+                    var requestId = (uint)_randGen.Next();
 
                     Marshal.StructureToPtr(
                         new HidGuardianGetCreateRequest
                         {
-                            Size = (uint) invertedCallSize,
+                            Size = (uint)invertedCallSize,
                             RequestId = requestId
                         },
                         invertedCallBuffer, false);
@@ -98,23 +98,18 @@ namespace HidCerberus.Srv.Core
                         invertedCallSize,
                         out var _);
 
+                    if (!ret)
+                        throw new ArgumentException("Couldn't queue inverted call.");
+
+                    // Get back modified values from driver
                     var request = Marshal.PtrToStructure<HidGuardianGetCreateRequest>(invertedCallBuffer);
 
-                    Console.WriteLine($"RequestId: {request.RequestId}");
-                    Console.WriteLine($"DeviceIndex: {request.DeviceIndex}");
-                    Console.WriteLine($"ProcessId: {request.ProcessId}");
-
-                    Console.WriteLine($"ProcessName: {Process.GetProcessById((int)request.ProcessId).ProcessName}");
-
-                    foreach (var extractHardwareId in ExtractHardwareIds(request))
-                        Console.WriteLine($"HWID: {extractHardwareId}");
-
+                    // Invoke open permission request so we know what to do next
                     var eventArgs =
-                        new OpenPermissionRequestedEventArgs(ExtractHardwareIds(request), (int) request.ProcessId);
+                        new OpenPermissionRequestedEventArgs(ExtractHardwareIds(request), (int)request.ProcessId);
                     OpenPermissionRequested?.Invoke(this, eventArgs);
 
-                    Console.WriteLine($"IsAllowed: {eventArgs.IsAllowed}");
-
+                    // Craft authentication request packet
                     Marshal.StructureToPtr(
                         new HidGuardianSetCreateRequest
                         {
@@ -131,6 +126,9 @@ namespace HidCerberus.Srv.Core
                         authCallBuffer,
                         authCallSize,
                         out var _);
+
+                    if (!ret)
+                        throw new ArgumentException("Couldn't complete authentication request.");
                 }
             }
             finally
@@ -143,7 +141,7 @@ namespace HidCerberus.Srv.Core
         {
             var multibyte = Encoding.Unicode.GetString(request.HardwareIds).TrimEnd('\0');
 
-            return Encoding.UTF8.GetBytes(multibyte).Separate(new byte[] {0x00})
+            return Encoding.UTF8.GetBytes(multibyte).Separate(new byte[] { 0x00 })
                 .Select(chunk => Encoding.UTF8.GetString(chunk)).ToList();
         }
 
