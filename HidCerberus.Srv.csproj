@@ -142,6 +142,7 @@
   <ItemGroup>
     <PackageReference Include="Costura.Fody" Version="1.6.2" />
     <PackageReference Include="JsonConfig" Version="1.0.2" />
+    <PackageReference Include="LiteDB" Version="4.1.1" />
     <PackageReference Include="Nancy.Hosting.Self" Version="1.4.1" />
     <PackageReference Include="HidSharp" Version="1.5.0" />
     <PackageReference Include="PInvoke.Kernel32" Version="0.5.111" />
