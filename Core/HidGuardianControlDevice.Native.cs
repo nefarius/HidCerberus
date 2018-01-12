@@ -13,7 +13,7 @@ namespace HidCerberus.Srv.Core
         private const int HardwareIdsArraySize = 512;
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Unicode)]
-        private struct HidGuardianGetCreateRequest
+        internal struct HidGuardianGetCreateRequest
         {
             public UInt32 Size;
             public UInt32 RequestId;
@@ -24,7 +24,7 @@ namespace HidCerberus.Srv.Core
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        private struct HidGuardianSetCreateRequest
+        internal struct HidGuardianSetCreateRequest
         {
             public UInt32 RequestId;
             public UInt32 DeviceIndex;

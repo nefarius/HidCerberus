@@ -1,5 +1,8 @@
-﻿using HidCerberus.Srv.Properties;
+﻿using System;
+using System.Diagnostics;
+using HidCerberus.Srv.Properties;
 using Nancy.Hosting.Self;
+using Serilog;
 
 namespace HidCerberus.Srv.Core
 {
@@ -10,9 +13,27 @@ namespace HidCerberus.Srv.Core
 
         public void Start()
         {
+            Log.Information("Service starting");
+
             _hgControl = new HidGuardianControlDevice();
 
-            _hgControl.OpenPermissionRequested += (sender, eventArgs) => eventArgs.IsAllowed = true;
+            _hgControl.OpenPermissionRequested += (sender, eventArgs) =>
+            {
+                var pid = eventArgs.ProcessId;
+                var proc = Process.GetProcessById(pid);
+
+                Log.Information("Open request received from {PID}: {Name} ({Path})", 
+                    pid, proc.ProcessName, proc.MainModule.FileName);
+
+                foreach (var id in eventArgs.HardwareIds)
+                {
+                    Log.Information("Hardware ID: {HardwareId}", id);
+                }
+
+                Log.Information("For the sake of demonstration we will always allow requests and log details");
+
+                eventArgs.IsAllowed = true;
+            };
 
             _nancyHost = new NancyHost(Settings.Default.ServiceUrl);
             _nancyHost.Start();
@@ -20,6 +41,8 @@ namespace HidCerberus.Srv.Core
 
         public void Stop()
         {
+            Log.Information("Service stopping");
+
             _hgControl.Dispose();
             _nancyHost.Stop();
         }

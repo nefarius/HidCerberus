@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using HidCerberus.Srv.Util;
 using JsonConfig;
 using PInvoke;
+using Serilog;
 
 namespace HidCerberus.Srv.Core
 {
@@ -51,10 +52,12 @@ namespace HidCerberus.Srv.Core
             if (_deviceHandle.IsInvalid)
                 throw new ArgumentException($"Couldn't open device {DevicePath}");
 
-            int maxThreads = Config.Global.Core.HGCD.Performance.WorkerThreads;
-            int completionPortThreads = Config.Global.Core.HGCD.Performance.CompletionPortThreads;
+            var maxThreads = (int)Config.Default.Core.HGCD.Performance.WorkerThreads;
+            var completionPortThreads = (int)Config.Default.Core.HGCD.Performance.CompletionPortThreads;
 
             ThreadPool.SetMinThreads(maxThreads, completionPortThreads);
+
+            Log.Information("Spawning {MaxThreads} threads", maxThreads);
 
             for (var i = 0; i < maxThreads; i++)
                 _invertedCallTasks.Add(

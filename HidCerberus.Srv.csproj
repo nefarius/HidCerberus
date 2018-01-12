@@ -67,6 +67,9 @@
     <RepositoryUrl>https://github.com/nefarius/ViGEm</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="default.json" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -132,6 +135,11 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="default.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Costura.Fody" Version="1.6.2" />
     <PackageReference Include="JsonConfig" Version="1.0.2" />
     <PackageReference Include="Nancy.Hosting.Self" Version="1.4.1" />
@@ -140,10 +148,5 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
     <PackageReference Include="Topshelf" Version="4.0.3" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="default.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 </Project>
