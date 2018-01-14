@@ -15,6 +15,8 @@ namespace HidCerberus.Srv
                 .WriteTo.RollingFile("Logs\\HidCerberus.Srv-{Date}.log")
                 .CreateLogger();
 
+            var t = new DevconClassFilter();
+
             HostFactory.Run(x =>
             {
                 StaticConfiguration.DisableErrorTraces = false;
