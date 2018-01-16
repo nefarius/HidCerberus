@@ -30,6 +30,8 @@ namespace HidCerberus.Srv.Core
             public UInt32 DeviceIndex;
             [MarshalAs(UnmanagedType.U1)]
             public bool IsAllowed;
+            [MarshalAs(UnmanagedType.U1)]
+            public bool IsSticky;
         }
     }
 }
