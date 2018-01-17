@@ -150,7 +150,7 @@ namespace HidCerberus.Srv.Core
         }
 
         /// <summary>
-        ///     Splits a UNICODE multi-string into a standard UTF-8 string array.
+        ///     Splits a UTF-16 multi-string into a standard UTF-8 string array.
         /// </summary>
         /// <param name="request">The <see cref="HidGuardianGetCreateRequest"/> to parse.</param>
         /// <returns>The array containing the extracted hardware IDs.</returns>
