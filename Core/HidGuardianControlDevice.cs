@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using HidCerberus.Srv.Util;
 using JsonConfig;
 using PInvoke;
+using Polly;
 using Serilog;
 
 namespace HidCerberus.Srv.Core
@@ -75,78 +76,84 @@ namespace HidCerberus.Srv.Core
 
         private void InvertedCallSupplierWorker(object cancellationToken)
         {
-            var token = (CancellationToken) cancellationToken;
-
-            var invertedCallSize = Marshal.SizeOf<HidGuardianGetCreateRequest>();
-            var invertedCallBuffer = Marshal.AllocHGlobal(invertedCallSize);
-
-            var authCallSize = Marshal.SizeOf<HidGuardianSetCreateRequest>();
-            var authCallBuffer = Marshal.AllocHGlobal(authCallSize);
-
-            try
+            Policy.Handle<ArgumentException>().Retry(3, (exception, i, ctx) =>
             {
-                while (!token.IsCancellationRequested)
+                Log.Error("Inverted Call Thread died with exception {@Exception}, trying to restart...", exception);
+            }).Execute(() =>
+            {
+                var token = (CancellationToken)cancellationToken;
+
+                var invertedCallSize = Marshal.SizeOf<HidGuardianGetCreateRequest>();
+                var invertedCallBuffer = Marshal.AllocHGlobal(invertedCallSize);
+
+                var authCallSize = Marshal.SizeOf<HidGuardianSetCreateRequest>();
+                var authCallBuffer = Marshal.AllocHGlobal(authCallSize);
+
+                try
                 {
-                    // Create random value to match request/response pair
-                    var requestId = (uint) _randGen.Next();
+                    while (!token.IsCancellationRequested)
+                    {
+                        // Create random value to match request/response pair
+                        var requestId = (uint)_randGen.Next();
 
-                    // Craft inverted call packet
-                    Marshal.StructureToPtr(
-                        new HidGuardianGetCreateRequest
-                        {
-                            Size = (uint) invertedCallSize,
-                            RequestId = requestId
-                        },
-                        invertedCallBuffer, false);
+                        // Craft inverted call packet
+                        Marshal.StructureToPtr(
+                            new HidGuardianGetCreateRequest
+                            {
+                                Size = (uint)invertedCallSize,
+                                RequestId = requestId
+                            },
+                            invertedCallBuffer, false);
 
-                    // Send inverted call (this will block until the driver receives an open request)
-                    var ret = _deviceHandle.OverlappedDeviceIoControl(
-                        IoctlHidguardianGetCreateRequest,
-                        invertedCallBuffer,
-                        invertedCallSize,
-                        invertedCallBuffer,
-                        invertedCallSize,
-                        out var _);
+                        // Send inverted call (this will block until the driver receives an open request)
+                        var ret = _deviceHandle.OverlappedDeviceIoControl(
+                            IoctlHidguardianGetCreateRequest,
+                            invertedCallBuffer,
+                            invertedCallSize,
+                            invertedCallBuffer,
+                            invertedCallSize,
+                            out var _);
 
-                    if (!ret)
-                        throw new ArgumentException("Couldn't queue inverted call.");
+                        if (!ret)
+                            throw new Win32Exception(Marshal.GetLastWin32Error());
 
-                    // Get back modified values from driver
-                    var request = Marshal.PtrToStructure<HidGuardianGetCreateRequest>(invertedCallBuffer);
+                        // Get back modified values from driver
+                        var request = Marshal.PtrToStructure<HidGuardianGetCreateRequest>(invertedCallBuffer);
 
-                    // Invoke open permission request so we know what to do next
-                    var eventArgs =
-                        new OpenPermissionRequestedEventArgs(ExtractHardwareIds(request), (int) request.ProcessId);
-                    OpenPermissionRequested?.Invoke(this, eventArgs);
+                        // Invoke open permission request so we know what to do next
+                        var eventArgs =
+                            new OpenPermissionRequestedEventArgs(ExtractHardwareIds(request), (int)request.ProcessId);
+                        OpenPermissionRequested?.Invoke(this, eventArgs);
 
-                    // Craft authentication request packet
-                    Marshal.StructureToPtr(
-                        new HidGuardianSetCreateRequest
-                        {
-                            RequestId = request.RequestId,
-                            DeviceIndex = request.DeviceIndex,
-                            IsAllowed = eventArgs.IsAllowed,
-                            IsSticky = eventArgs.IsPermanent
-                        },
-                        authCallBuffer, false);
+                        // Craft authentication request packet
+                        Marshal.StructureToPtr(
+                            new HidGuardianSetCreateRequest
+                            {
+                                RequestId = request.RequestId,
+                                DeviceIndex = request.DeviceIndex,
+                                IsAllowed = eventArgs.IsAllowed,
+                                IsSticky = eventArgs.IsPermanent
+                            },
+                            authCallBuffer, false);
 
-                    // This request will dequeue the pending request and either complete it successfully or fail it
-                    ret = _deviceHandle.OverlappedDeviceIoControl(
-                        IoctlHidguardianSetCreateRequest,
-                        authCallBuffer,
-                        authCallSize,
-                        authCallBuffer,
-                        authCallSize,
-                        out var _);
+                        // This request will dequeue the pending request and either complete it successfully or fail it
+                        ret = _deviceHandle.OverlappedDeviceIoControl(
+                            IoctlHidguardianSetCreateRequest,
+                            authCallBuffer,
+                            authCallSize,
+                            authCallBuffer,
+                            authCallSize,
+                            out var _);
 
-                    if (!ret)
-                        throw new ArgumentException("Couldn't complete authentication request.");
+                        if (!ret)
+                            throw new Win32Exception(Marshal.GetLastWin32Error());
+                    }
                 }
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(invertedCallBuffer);
-            }
+                finally
+                {
+                    Marshal.FreeHGlobal(invertedCallBuffer);
+                }
+            });
         }
 
         /// <summary>
@@ -172,7 +179,8 @@ namespace HidCerberus.Srv.Core
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects).
+                    _invertedCallTokenSource.Cancel();
+                    Task.WaitAll(_invertedCallTasks.ToArray());
                 }
 
                 _deviceHandle?.Close();
