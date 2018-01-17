@@ -27,6 +27,8 @@ namespace HidCerberus.Srv.Core
         public int ProcessId { get; }
 
         public bool IsAllowed { get; set; }
+
+        public bool IsPermanent { get; set; }
     }
 
     public partial class HidGuardianControlDevice : IDisposable
@@ -123,7 +125,8 @@ namespace HidCerberus.Srv.Core
                         {
                             RequestId = request.RequestId,
                             DeviceIndex = request.DeviceIndex,
-                            IsAllowed = eventArgs.IsAllowed
+                            IsAllowed = eventArgs.IsAllowed,
+                            IsSticky = eventArgs.IsPermanent
                         },
                         authCallBuffer, false);
 

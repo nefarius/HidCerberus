@@ -30,9 +30,10 @@ namespace HidCerberus.Srv.Core
                     Log.Information("Hardware ID: {HardwareId}", id);
                 }
 
-                Log.Information("For the sake of demonstration we will always allow requests and log details");
+                Log.Information("For the sake of demonstration we will permanently allow requests and log details");
 
                 eventArgs.IsAllowed = true;
+                eventArgs.IsPermanent = true;
             };
 
             _nancyHost = new NancyHost(Settings.Default.ServiceUrl);
