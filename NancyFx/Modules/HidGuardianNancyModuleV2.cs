@@ -31,6 +31,26 @@ namespace HidCerberus.Srv.NancyFx.Modules
                 return Response.AsJson(new { json.force });
             };
 
+            Get["/guardian/allow"] = _ =>
+            {
+                var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase);
+                var allowByDefault = wlKey?.GetValue("AllowByDefault");
+                wlKey?.Close();
+
+                return Response.AsJson(new { allowByDefault });
+            };
+
+            Post["/guardian/allow"] = parameters =>
+            {
+                dynamic json = JObject.Parse(Request.Body.AsString());
+
+                var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true);
+                wlKey?.SetValue("AllowByDefault", (int)json.allowByDefault);
+                wlKey?.Close();
+
+                return Response.AsJson(new { json.allowByDefault });
+            };
+
             Get["/guardian/affected"] = _ =>
             {
                 var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase);
