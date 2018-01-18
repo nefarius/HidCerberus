@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Win32;
 using Nancy;
 using Nancy.Extensions;
@@ -28,6 +29,15 @@ namespace HidCerberus.Srv.NancyFx.Modules
                 wlKey?.Close();
 
                 return Response.AsJson(new { json.force });
+            };
+
+            Get["/guardian/affected"] = _ =>
+            {
+                var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase);
+                var affected = wlKey?.GetValue("AffectedDevices") as string[];
+                wlKey?.Close();
+
+                return Response.AsJson(affected?.Select(a => new { hardwareId = a }));
             };
         }
 
