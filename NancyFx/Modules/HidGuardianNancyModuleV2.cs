@@ -146,6 +146,28 @@ namespace HidCerberus.Srv.NancyFx.Modules
                 return Response.AsJson(hwIds);
             };
 
+            Delete["/guardian/affected/{entityId}"] = parameters =>
+            {
+                using (var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true))
+                {
+                    // get existing Hardware IDs
+                    var exempted = (wlKey?.GetValue("ExemptedDevices") as string[])
+                        ?.Select(a => new HidGuardianAffectedDevice { HardwareId = a }).ToList();
+
+                    if (exempted.RemoveAll(a => a.EntityId == parameters.entityId) <= 0)
+                        throw new KeyNotFoundException();
+
+                    // write back to registry
+                    wlKey?.SetValue("ExemptedDevices",
+                        exempted.Distinct()
+                            .Select(o => o.HardwareId)
+                            .ToArray(),
+                        RegistryValueKind.MultiString);
+
+                    return Response.AsJson(exempted);
+                }
+            };
+
             #endregion
         }
 
