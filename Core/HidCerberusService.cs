@@ -15,6 +15,7 @@ namespace HidCerberus.Srv.Core
         {
             Log.Information("Service starting");
 
+#if BLAH
             _hgControl = new HidGuardianControlDevice();
 
             _hgControl.OpenPermissionRequested += (sender, eventArgs) =>
@@ -35,6 +36,7 @@ namespace HidCerberus.Srv.Core
                 eventArgs.IsAllowed = true;
                 eventArgs.IsPermanent = true;
             };
+#endif
 
             _nancyHost = new NancyHost(Settings.Default.ServiceUrl);
             _nancyHost.Start();

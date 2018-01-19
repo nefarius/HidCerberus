@@ -146,7 +146,7 @@ namespace HidCerberus.Srv.NancyFx.Modules
                 return Response.AsJson(hwIds, HttpStatusCode.Created);
             };
 
-            Delete["/guardian/affected/{entityId}"] = parameters =>
+            Delete["/guardian/exempted/{entityId}"] = parameters =>
             {
                 using (var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true))
                 {
