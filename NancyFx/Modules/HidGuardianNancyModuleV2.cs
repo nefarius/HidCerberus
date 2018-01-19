@@ -13,7 +13,7 @@ namespace HidCerberus.Srv.NancyFx.Modules
     public class HidGuardianNancyModuleV2 : NancyModule
     {
         private readonly JsonSerializerSettings _serializerSettings =
-            new JsonSerializerSettings {MissingMemberHandling = MissingMemberHandling.Error};
+            new JsonSerializerSettings { MissingMemberHandling = MissingMemberHandling.Error };
 
         public HidGuardianNancyModuleV2() : base("/api/v2")
         {
@@ -55,7 +55,7 @@ namespace HidCerberus.Srv.NancyFx.Modules
                 {
                     var affected = wlKey?.GetValue("AffectedDevices") as string[];
 
-                    return Response.AsJson(affected?.Select(a => new HidGuardianAffectedDevice {HardwareId = a}));
+                    return Response.AsJson(affected?.Select(a => new HidGuardianAffectedDevice { HardwareId = a }));
                 }
             };
 
@@ -65,22 +65,47 @@ namespace HidCerberus.Srv.NancyFx.Modules
 
                 using (var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true))
                 {
+                    var newList = new List<HidGuardianAffectedDevice>(hwIds);
+
                     // get existing Hardware IDs
                     var affected = (wlKey?.GetValue("AffectedDevices") as string[])
-                        ?.Select(a => new HidGuardianAffectedDevice {HardwareId = a}).ToList();
+                        ?.Select(a => new HidGuardianAffectedDevice { HardwareId = a }).ToList();
 
                     // fuse arrays
                     if (affected != null)
-                        hwIds.AddRange(affected);
+                        newList.AddRange(affected);
 
                     // write back to registry
                     wlKey?.SetValue("AffectedDevices",
-                        hwIds.Where(s => !string.IsNullOrWhiteSpace(s.HardwareId)).Distinct().Select(o => o.HardwareId)
+                        newList.Where(s => !string.IsNullOrWhiteSpace(s.HardwareId)).Distinct()
+                            .Select(o => o.HardwareId)
                             .ToArray(),
                         RegistryValueKind.MultiString);
                 }
 
                 return Response.AsJson(hwIds);
+            };
+
+            Delete["/guardian/affected/{entityId}"] = parameters =>
+            {
+                using (var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true))
+                {
+                    // get existing Hardware IDs
+                    var affected = (wlKey?.GetValue("AffectedDevices") as string[])
+                        ?.Select(a => new HidGuardianAffectedDevice { HardwareId = a }).ToList();
+
+                    if (affected.RemoveAll(a => a.EntityId == parameters.entityId) <= 0)
+                        throw new KeyNotFoundException();
+
+                    // write back to registry
+                    wlKey?.SetValue("AffectedDevices",
+                        affected.Distinct()
+                            .Select(o => o.HardwareId)
+                            .ToArray(),
+                        RegistryValueKind.MultiString);
+
+                    return Response.AsJson(affected);
+                }
             };
 
             #endregion
@@ -91,25 +116,25 @@ namespace HidCerberus.Srv.NancyFx.Modules
             {
                 using (var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase))
                 {
-                    var affected = wlKey?.GetValue("ExemptedDevices") as string[];
+                    var exempted = wlKey?.GetValue("ExemptedDevices") as string[];
 
-                    return Response.AsJson(affected?.Select(a => new HidGuardianExemptedDevice {HardwareId = a}));
+                    return Response.AsJson(exempted?.Select(a => new HidGuardianAffectedDevice { HardwareId = a }));
                 }
             };
 
             Put["/guardian/exempted"] = _ =>
             {
-                var hwIds = JsonConvert.DeserializeObject<List<HidGuardianExemptedDevice>>(Request.Body.AsString());
+                var hwIds = JsonConvert.DeserializeObject<List<HidGuardianAffectedDevice>>(Request.Body.AsString());
 
                 using (var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true))
                 {
                     // get existing Hardware IDs
-                    var affected = (wlKey?.GetValue("ExemptedDevices") as string[])
-                        ?.Select(a => new HidGuardianExemptedDevice { HardwareId = a }).ToList();
+                    var exempted = (wlKey?.GetValue("ExemptedDevices") as string[])
+                        ?.Select(a => new HidGuardianAffectedDevice { HardwareId = a }).ToList();
 
                     // fuse arrays
-                    if (affected != null)
-                        hwIds.AddRange(affected);
+                    if (exempted != null)
+                        hwIds.AddRange(exempted);
 
                     // write back to registry
                     wlKey?.SetValue("ExemptedDevices",
