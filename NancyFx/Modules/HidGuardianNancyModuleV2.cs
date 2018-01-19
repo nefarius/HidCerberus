@@ -1,9 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using HidCerberus.Srv.Core;
+using HidCerberus.Srv.Util;
 using Microsoft.Win32;
 using Nancy;
 using Nancy.Extensions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Serilog;
 
 namespace HidCerberus.Srv.NancyFx.Modules
 {
@@ -11,44 +16,30 @@ namespace HidCerberus.Srv.NancyFx.Modules
     {
         public HidGuardianNancyModuleV2() : base("/api/v2")
         {
-            Get["/guardian/force"] = _ =>
+            Get["/guardian/config"] = _ =>
             {
-                var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase);
-                var force = wlKey?.GetValue("Force");
-                wlKey?.Close();
-
-                return Response.AsJson(new { force });
+                using (var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase))
+                {
+                    return Response.AsJson(new HidGuardianConfiguration()
+                    {
+                        AllowByDefault = Convert.ToBoolean(wlKey?.GetValue("AllowByDefault")),
+                        Force = Convert.ToBoolean(wlKey?.GetValue("Force"))
+                    });
+                }
             };
 
-            Post["/guardian/force"] = parameters =>
+            Put["/guardian/config"] = _ =>
             {
-                dynamic json = JObject.Parse(Request.Body.AsString());
+                using (var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true))
+                {
+                    var json = Request.Body.AsString();
+                    var cfg = JsonConvert.DeserializeObject<HidGuardianConfiguration>(json);
 
-                var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true);
-                wlKey?.SetValue("Force", (int)json.force);
-                wlKey?.Close();
+                    wlKey?.SetNonNullValueDword("AllowByDefault", cfg.AllowByDefault);
+                    wlKey?.SetNonNullValueDword("Force", cfg.Force);
 
-                return Response.AsJson(new { json.force });
-            };
-
-            Get["/guardian/allow"] = _ =>
-            {
-                var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase);
-                var allowByDefault = wlKey?.GetValue("AllowByDefault");
-                wlKey?.Close();
-
-                return Response.AsJson(new { allowByDefault });
-            };
-
-            Post["/guardian/allow"] = parameters =>
-            {
-                dynamic json = JObject.Parse(Request.Body.AsString());
-
-                var wlKey = Registry.LocalMachine.OpenSubKey(HidGuardianRegistryKeyBase, true);
-                wlKey?.SetValue("AllowByDefault", (int)json.allowByDefault);
-                wlKey?.Close();
-
-                return Response.AsJson(new { json.allowByDefault });
+                    return Response.AsText(json);
+                }
             };
 
             Get["/guardian/affected"] = _ =>
