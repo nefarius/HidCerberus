@@ -83,7 +83,7 @@ namespace HidCerberus.Srv.NancyFx.Modules
                         RegistryValueKind.MultiString);
                 }
 
-                return Response.AsJson(hwIds);
+                return Response.AsJson(hwIds, HttpStatusCode.Created);
             };
 
             Delete["/guardian/affected/{entityId}"] = parameters =>
@@ -143,7 +143,7 @@ namespace HidCerberus.Srv.NancyFx.Modules
                         RegistryValueKind.MultiString);
                 }
 
-                return Response.AsJson(hwIds);
+                return Response.AsJson(hwIds, HttpStatusCode.Created);
             };
 
             Delete["/guardian/affected/{entityId}"] = parameters =>
