@@ -7,8 +7,8 @@ namespace HidCerberus.Srv.NancyFx
     {
         public CustomJsonSerializer()
         {
-            this.ContractResolver = new CamelCasePropertyNamesContractResolver();
-            this.Formatting = Formatting.Indented;
+            ContractResolver = new CamelCasePropertyNamesContractResolver();
+            Formatting = Formatting.Indented;
         }
     }
 }
