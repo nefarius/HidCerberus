@@ -3,3 +3,7 @@
 ################################################################################
 
 /.vs/HidCerberus/v15
+/build/obj
+/HidCerberus/.vs/HidCerberus/v15
+/HidCerberus/obj/Debug
+/HidCerberus/obj
