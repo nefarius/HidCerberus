@@ -1,4 +1,4 @@
-![](https://github.com/ViGEm/HidCerberus/raw/master/HidCerberus/devil.png)
+![](HidCerberus/devil.png)
 
 # HidCerberus Service
 The HidCerberus Service abstracts away configuration tasks for the [HidGuardian Device Driver](../HidGuardian) and allows literally any 3rd party tool to interact with the driver via HTTP REST API.
