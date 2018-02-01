@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
 using HidSharp;
+using JetBrains.Annotations;
 using Nancy;
 
 namespace HidCerberus.Srv.NancyFx.Modules
@@ -28,6 +29,7 @@ namespace HidCerberus.Srv.NancyFx.Modules
         }
     }
 
+    [UsedImplicitly]
     public class HidDeviceNancyModuleV1 : NancyModule
     {
         public HidDeviceNancyModuleV1() : base("/api/v1")

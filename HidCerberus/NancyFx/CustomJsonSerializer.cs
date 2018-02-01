@@ -1,9 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using JetBrains.Annotations;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace HidCerberus.Srv.NancyFx
 {
-    public class CustomJsonSerializer : JsonSerializer
+    [UsedImplicitly]
+    public sealed class CustomJsonSerializer : JsonSerializer
     {
         public CustomJsonSerializer()
         {

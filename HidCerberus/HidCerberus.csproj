@@ -141,6 +141,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Costura.Fody" Version="1.6.2" />
+    <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
     <PackageReference Include="JsonConfig" Version="1.0.2" />
     <PackageReference Include="LiteDB" Version="4.1.1" />
     <PackageReference Include="Nancy.Hosting.Self" Version="1.4.1" />

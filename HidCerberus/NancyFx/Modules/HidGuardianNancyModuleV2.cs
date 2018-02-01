@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HidCerberus.Srv.Core;
 using HidCerberus.Srv.Util;
+using JetBrains.Annotations;
 using Microsoft.Win32;
 using Nancy;
 using Nancy.Extensions;
@@ -10,6 +11,7 @@ using Newtonsoft.Json;
 
 namespace HidCerberus.Srv.NancyFx.Modules
 {
+    [UsedImplicitly]
     public class HidGuardianNancyModuleV2 : NancyModule
     {
         private readonly JsonSerializerSettings _serializerSettings =

@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using JetBrains.Annotations;
 using Microsoft.Win32;
 using Nancy;
 using Nancy.Extensions;
 
 namespace HidCerberus.Srv.NancyFx.Modules
 {
+    [UsedImplicitly]
     public class HidGuardianNancyModuleV1 : NancyModule
     {
         private static readonly IEnumerable<object> ResponseOk = new[] {"OK"};
