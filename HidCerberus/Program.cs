@@ -12,7 +12,7 @@ namespace HidCerberus.Srv
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.Console()
-                .WriteTo.RollingFile("Logs\\HidCerberus.Srv-{Date}.log")
+                .WriteTo.RollingFile("Logs\\HidCerberus-{Date}.log")
                 .CreateLogger();
 
             var t = new DevconClassFilter();
