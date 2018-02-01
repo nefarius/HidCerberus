@@ -5,6 +5,8 @@ The HidCerberus Service abstracts away configuration tasks for the [HidGuardian 
 
 ![Disclaimer](http://nefarius.at/public/Alpha-Disclaimer.png)
 
+**Please consider the master branch unstable until the disclaimer disappears!**
+
 ## 3rd party dependencies
 The following dependency libraries will be automatically resolved via [NuGet](http://www.nuget.org/) on first build.
  * [NancyFx](http://nancyfx.org/)
