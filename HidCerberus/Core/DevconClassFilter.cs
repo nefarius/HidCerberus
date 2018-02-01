@@ -23,6 +23,11 @@ namespace HidCerberus.Srv.Core
 
         public static string XnaCompositeClassName => "XnaComposite";
 
+        /// <summary>
+        ///     Retrieves the first <see cref="Guid" /> reported by the system corresponding to the provided class name.
+        /// </summary>
+        /// <param name="name">The name of the class to lookup.</param>
+        /// <returns>The <see cref="Guid" /> of the class.</returns>
         private static Guid ClassGuidFromName(string name)
         {
             var bufferSize = Marshal.SizeOf(typeof(Guid));
@@ -30,7 +35,7 @@ namespace HidCerberus.Srv.Core
 
             try
             {
-                var ret = SetupDiClassGuidsFromNameEx(XnaCompositeClassName, guidBuffer, 1, out var _,
+                var ret = SetupDiClassGuidsFromNameEx(name, guidBuffer, 1, out var _,
                     Environment.MachineName,
                     IntPtr.Zero);
 
