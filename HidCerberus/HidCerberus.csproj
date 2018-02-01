@@ -58,7 +58,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>favicon.ico</ApplicationIcon>
+    <ApplicationIcon>devil.ico</ApplicationIcon>
     <Copyright>Copyright © Benjamin Höglinger-Stelzer 2017</Copyright>
     <Authors>Benjamin Höglinger-Stelzer</Authors>
     <Company>Benjamin Höglinger-Stelzer</Company>
@@ -117,7 +117,6 @@
     <Content Include="Content\dep\knockout.mapping.min.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="favicon.ico" />
     <Content Include="index.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
