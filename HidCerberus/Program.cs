@@ -31,7 +31,7 @@ namespace HidCerberus.Srv
                 x.RunAsLocalSystem();
                 x.SetDescription("HidCerberus Configuration Host for HidGuardian Filter Drivers");
                 x.SetDisplayName("HidCerberus Service");
-                x.SetServiceName("HidCerberus.Srv");
+                x.SetServiceName("HidCerberus");
             });
         }
     }
