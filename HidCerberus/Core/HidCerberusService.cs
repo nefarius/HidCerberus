@@ -21,15 +21,19 @@ namespace HidCerberus.Core
 
             var arules = CerberusDatabase.Instance.GetCollection<CerberusRule>();
 
-            var all = arules.FindById("f7d6d319790927f44a8a762e2bb92c8f45acdf35eb1b72a0ccd740bca8930ab0");
-
-            arules.Update(new CerberusRule()
+            var r = new CerberusRule()
             {
-                HardwareId = @"HID\VID_054C&PID_05C4",
-                IsAllowed = false,
-                IsPermanent = false,
-                ProcessIdentifiers = { new ProcessByImageNameIdentifier { ImageName = "rundll32.exe" } }
-            });
+                HardwareId = @"HID_DEVICE",
+                IsAllowed = true,
+                IsPermanent = true,
+                ProcessIdentifiers = {new ProcessByImageNameIdentifier {ImageName = "rundll32.exe"}}
+            };
+
+            arules.Upsert(r);
+
+            Log.Information("CerberusRuleId: {Id}", r.CerberusRuleId);
+
+            Log.Warning("Entry: {id}", arules.FindById("63d85cdf03374acf10e019eecedd4f56adc266ef5c10dba3ae8aba1e0fcddf0d"));
 
             _hgControl = new HidGuardianControlDevice();
 
@@ -37,18 +41,31 @@ namespace HidCerberus.Core
             {
                 var pid = args.ProcessId;
 
+                Log.Information("Open request received from {PID}", pid);
+                
                 var rules = CerberusDatabase.Instance.GetCollection<CerberusRule>();
 
                 foreach (var hardwareId in args.HardwareIds)
                 {
-                    var rule = rules.FindById(hardwareId.ToSha256());
+                    Log.Information("Looking up rule for Hardware ID: {HardwareId}", hardwareId);
+
+                    Log.Information("CerberusRuleId: {Id}", hardwareId.ToUpper().ToSha256());
+
+                    var rule = rules.FindById(hardwareId.ToUpper().ToSha256());
 
                     if (rule == null)
+                    {
+                        Log.Warning("Rule not found in DB");
                         continue;
+                    }
+
+                    Log.Information("Found rule for Hardware ID: {HardwareId}", hardwareId);
 
                     foreach (var identifier in rule.ProcessIdentifiers)
                     {
                         if (!identifier.IdentifyByPid(pid)) continue;
+
+                        Log.Information("Found process identifier [Identifier}", identifier);
 
                         args.IsAllowed = rule.IsAllowed;
                         args.IsPermanent = rule.IsPermanent;

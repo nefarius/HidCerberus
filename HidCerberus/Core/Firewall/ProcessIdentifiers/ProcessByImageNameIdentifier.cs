@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using JetBrains.Annotations;
 
 namespace HidCerberus.Core.Firewall.ProcessIdentifiers
@@ -11,7 +12,8 @@ namespace HidCerberus.Core.Firewall.ProcessIdentifiers
 
         public bool IdentifyByPid(int pid)
         {
-            return ImageName.Equals(Process.GetProcessById(pid).ProcessName,
+            return (Path.GetFileNameWithoutExtension(ImageName) ?? ImageName).Equals(
+                Process.GetProcessById(pid).ProcessName,
                 StringComparison.InvariantCultureIgnoreCase);
         }
     }
