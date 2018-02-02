@@ -1,5 +1,4 @@
-﻿using HidCerberus.Srv.NancyFx;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Nancy;
 using Nancy.TinyIoc;
 using Newtonsoft.Json;
