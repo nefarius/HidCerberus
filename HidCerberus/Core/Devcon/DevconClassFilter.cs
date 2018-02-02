@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 
-namespace HidCerberus.Srv.Core
+namespace HidCerberus.Core.Devcon
 {
     public partial class DevconClassFilter
     {

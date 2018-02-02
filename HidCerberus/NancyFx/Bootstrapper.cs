@@ -1,9 +1,10 @@
-﻿using JetBrains.Annotations;
+﻿using HidCerberus.Srv.NancyFx;
+using JetBrains.Annotations;
 using Nancy;
 using Nancy.TinyIoc;
 using Newtonsoft.Json;
 
-namespace HidCerberus.Srv.NancyFx
+namespace HidCerberus.NancyFx
 {
     [UsedImplicitly]
     public class Bootstrapper : DefaultNancyBootstrapper

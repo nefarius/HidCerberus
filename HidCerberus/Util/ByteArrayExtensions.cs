@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace HidCerberus.Srv.Util
+namespace HidCerberus.Util
 {
     public static class ByteArrayExtensions
     {

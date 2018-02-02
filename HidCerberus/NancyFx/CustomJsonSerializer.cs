@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace HidCerberus.Srv.NancyFx
+namespace HidCerberus.NancyFx
 {
     [UsedImplicitly]
     public sealed class CustomJsonSerializer : JsonSerializer

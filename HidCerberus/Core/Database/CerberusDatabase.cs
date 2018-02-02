@@ -1,7 +1,7 @@
 ﻿using System;
 using LiteDB;
 
-namespace HidCerberus.Srv.Core
+namespace HidCerberus.Core.Database
 {
     public class CerberusDatabase : LiteDatabase
     {

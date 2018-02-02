@@ -1,10 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using HidCerberus.Srv.Properties;
+﻿using HidCerberus.Srv.Properties;
 using Nancy.Hosting.Self;
 using Serilog;
 
-namespace HidCerberus.Srv.Core
+namespace HidCerberus.Core
 {
     public class HidCerberusService
     {

@@ -1,4 +1,4 @@
-﻿namespace HidCerberus.Srv.Core
+﻿namespace HidCerberus.Core.Firewall
 {
     public class CerberusRule
     {

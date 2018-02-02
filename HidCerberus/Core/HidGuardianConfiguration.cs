@@ -1,8 +1,7 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Newtonsoft.Json;
 
-namespace HidCerberus.Srv.Core
+namespace HidCerberus.Core
 {
     public class HidGuardianConfiguration
     {

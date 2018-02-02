@@ -1,7 +1,7 @@
 ﻿using JetBrains.Annotations;
 using Nancy;
 
-namespace HidCerberus.Srv.NancyFx.Modules
+namespace HidCerberus.NancyFx.Modules
 {
     [UsedImplicitly]
     public class IndexModule : NancyModule

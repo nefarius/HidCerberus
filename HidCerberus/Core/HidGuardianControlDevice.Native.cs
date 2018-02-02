@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Security;
 
-namespace HidCerberus.Srv.Core
+namespace HidCerberus.Core
 {
     [SuppressUnmanagedCodeSecurity]
     public partial class HidGuardianControlDevice

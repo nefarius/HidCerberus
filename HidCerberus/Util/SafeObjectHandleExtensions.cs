@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using PInvoke;
 
-namespace HidCerberus.Srv.Util
+namespace HidCerberus.Util
 {
     public static class SafeObjectHandleExtensions
     {

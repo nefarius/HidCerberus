@@ -7,7 +7,7 @@ using Microsoft.Win32;
 using Nancy;
 using Nancy.Extensions;
 
-namespace HidCerberus.Srv.NancyFx.Modules
+namespace HidCerberus.NancyFx.Modules
 {
     [UsedImplicitly]
     public class HidGuardianNancyModuleV1 : NancyModule

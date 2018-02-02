@@ -4,7 +4,7 @@ using HidSharp;
 using JetBrains.Annotations;
 using Nancy;
 
-namespace HidCerberus.Srv.NancyFx.Modules
+namespace HidCerberus.NancyFx.Modules
 {
     internal static class HidDeviceExtensions
     {

@@ -1,7 +1,7 @@
 ﻿using System;
-using HidCerberus.Srv.Util;
+using HidCerberus.Util;
 
-namespace HidCerberus.Srv.Core
+namespace HidCerberus.Core
 {
     public class HidGuardianAffectedDevice
     {

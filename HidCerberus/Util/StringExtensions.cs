@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace HidCerberus.Srv.Util
+namespace HidCerberus.Util
 {
     public static class StringExtensions
     {

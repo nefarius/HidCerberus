@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Win32;
 
-namespace HidCerberus.Srv.Util
+namespace HidCerberus.Util
 {
     public static class RegistryKeyExtensions
     {

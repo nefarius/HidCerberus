@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using HidCerberus.Srv.Core;
-using HidCerberus.Srv.Util;
+using HidCerberus.Core;
+using HidCerberus.Util;
 using JetBrains.Annotations;
 using Microsoft.Win32;
 using Nancy;

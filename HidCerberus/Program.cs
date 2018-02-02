@@ -1,7 +1,8 @@
-﻿using HidCerberus.Srv.Core;
+﻿using HidCerberus.Core;
 using Nancy;
 using Serilog;
 using Topshelf;
+using DevconClassFilter = HidCerberus.Core.Devcon.DevconClassFilter;
 
 namespace HidCerberus.Srv
 {

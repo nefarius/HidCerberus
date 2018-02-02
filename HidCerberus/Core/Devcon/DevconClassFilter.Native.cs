@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace HidCerberus.Srv.Core
+namespace HidCerberus.Core.Devcon
 {
     public partial class DevconClassFilter
     {
