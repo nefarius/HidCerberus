@@ -5,7 +5,7 @@ using System.Security;
 namespace HidCerberus.Core
 {
     [SuppressUnmanagedCodeSecurity]
-    public partial class HidGuardianControlDevice
+    public sealed partial class HidGuardianControlDevice
     {
         private const uint IoctlHidguardianGetCreateRequest = 0x8000E004;
         private const uint IoctlHidguardianSetCreateRequest = 0x8000A008;

@@ -32,7 +32,7 @@ namespace HidCerberus.Core
         public bool IsPermanent { get; set; }
     }
 
-    public partial class HidGuardianControlDevice : IDisposable
+    public sealed partial class HidGuardianControlDevice : IDisposable
     {
         private readonly Kernel32.SafeObjectHandle _deviceHandle;
         private readonly List<Task> _invertedCallTasks = new List<Task>();
@@ -174,7 +174,7 @@ namespace HidCerberus.Core
 
         private bool disposedValue; // To detect redundant calls
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
