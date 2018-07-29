@@ -55,8 +55,8 @@ namespace HidCerberus.Core
             if (_deviceHandle.IsInvalid)
                 throw new ArgumentException($"Couldn't open device {DevicePath}");
 
-            var maxThreads = (int) Config.Default.Core.HGCD.Performance.WorkerThreads;
-            var completionPortThreads = (int) Config.Default.Core.HGCD.Performance.CompletionPortThreads;
+            var maxThreads = (int)Config.Default.Core.HGCD.Performance.WorkerThreads;
+            var completionPortThreads = (int)Config.Default.Core.HGCD.Performance.CompletionPortThreads;
 
             ThreadPool.SetMinThreads(maxThreads, completionPortThreads);
 
@@ -76,13 +76,13 @@ namespace HidCerberus.Core
 
         private void InvertedCallSupplierWorker(object cancellationToken)
         {
-            Policy.Handle<ArgumentException>().Retry(3,
+            Policy.Handle<Win32Exception>().Retry(3,
                 (exception, i, ctx) =>
                 {
                     Log.Error("Inverted Call Thread died with exception {@Exception}, trying to restart...", exception);
                 }).Execute(() =>
             {
-                var token = (CancellationToken) cancellationToken;
+                var token = (CancellationToken)cancellationToken;
 
                 var invertedCallSize = Marshal.SizeOf<HidGuardianGetCreateRequest>();
                 var invertedCallBuffer = Marshal.AllocHGlobal(invertedCallSize);
@@ -95,13 +95,13 @@ namespace HidCerberus.Core
                     while (!token.IsCancellationRequested)
                     {
                         // Create random value to match request/response pair
-                        var requestId = (uint) _randGen.Next();
+                        var requestId = (uint)_randGen.Next();
 
                         // Craft inverted call packet
                         Marshal.StructureToPtr(
                             new HidGuardianGetCreateRequest
                             {
-                                Size = (uint) invertedCallSize,
+                                Size = (uint)invertedCallSize,
                                 RequestId = requestId
                             },
                             invertedCallBuffer, false);
@@ -123,7 +123,7 @@ namespace HidCerberus.Core
 
                         // Invoke open permission request so we know what to do next
                         var eventArgs =
-                            new OpenPermissionRequestedEventArgs(ExtractHardwareIds(request), (int) request.ProcessId);
+                            new OpenPermissionRequestedEventArgs(ExtractHardwareIds(request), (int)request.ProcessId);
                         OpenPermissionRequested?.Invoke(this, eventArgs);
 
                         // Craft authentication request packet
@@ -166,7 +166,7 @@ namespace HidCerberus.Core
         {
             var multibyte = Encoding.Unicode.GetString(request.HardwareIds).TrimEnd('\0');
 
-            return Encoding.UTF8.GetBytes(multibyte).Separate(new byte[] {0x00})
+            return Encoding.UTF8.GetBytes(multibyte).Separate(new byte[] { 0x00 })
                 .Select(chunk => Encoding.UTF8.GetString(chunk)).ToList();
         }
 
@@ -180,11 +180,13 @@ namespace HidCerberus.Core
             {
                 if (disposing)
                 {
+                    Log.Information("Notifying threads to quit");
                     _invertedCallTokenSource.Cancel();
-                    Task.WaitAll(_invertedCallTasks.ToArray());
                 }
 
+                Log.Information("Closing handle to control device...");
                 _deviceHandle?.Close();
+                Log.Information("Handle closed");
 
                 disposedValue = true;
             }
